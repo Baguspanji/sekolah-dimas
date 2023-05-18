@@ -169,21 +169,20 @@ class KaryawanController extends Controller
                 'foto.mimes' => 'Pilih file dengan format jpg atau png',
                 'no_hp.unique' => 'No hp sudah tersedia',
             ]);
-    
+
             $save_user = User::create([
                 'name' => ucwords($request->nama),
                 'email' => $request->email,
                 'email_verified_at' => Carbon::now(),
                 'password' => $request->jabatan == 1 || $request->jabatan == 2 || $request->jabatan == 3 || $request->jabatan == 4 ? Hash::make($request->nip) : null
             ]);
-    
+
             if($request->hasFile('foto')) {
                 $file = $request->file('foto');
                 $nama_file = "Karyawan_".Carbon::now()->format('YmdHs').'_'.Str::random(10);
-    
-                $tujuan_upload = 'images\karyawan';
-                $file->move($tujuan_upload,$nama_file);
-    
+
+                $file->move('images/karyawan',$nama_file);
+
                 $karyawan = new Karyawan;
                 $karyawan->nama = ucwords($request->nama);
                 $karyawan->nip = $request->nip;
@@ -199,7 +198,7 @@ class KaryawanController extends Controller
                 $karyawan->foto = $nama_file;
                 $karyawan->alamat = $request->alamat;
                 $karyawan->active = false;
-    
+
                 $karyawan->save();
             } else {
                 $karyawan = new Karyawan;
@@ -218,38 +217,38 @@ class KaryawanController extends Controller
                 $karyawan->active = false;
                 $karyawan->save();
             }
-    
+
             $dateHelper = new DateHelper();
             $now = $dateHelper->getNow();
             $now2 = $dateHelper->getNow2();
-    
+
             KaryawanHaveGaji::create([
                 'id_karyawan' => $karyawan->id,
-                'tahun_ajaran' => $now."/".$now2,                
+                'tahun_ajaran' => $now."/".$now2,
             ]);
-    
+
             $tahun_ini = Carbon::now()->format('Y');
             $masa_kerja = $tahun_ini - $karyawan->tahun_masuk;
             KaryawanHaveTunjanganMasaKerja::create([
-                'id_karyawan' => $karyawan->id,   
-                'masa_kerja' => $masa_kerja,  
-                'tahun_ajaran' =>  $now."/".$now2,      
+                'id_karyawan' => $karyawan->id,
+                'masa_kerja' => $masa_kerja,
+                'tahun_ajaran' =>  $now."/".$now2,
             ]);
-    
+
             $roles = [
                 1 => 'super admin',
                 2 => 'bendahara',
                 3 => 'admin sekolah',
                 4 => 'kepala sekolah',
             ];
-            
+
             if (isset($roles[$request->jabatan])) {
                 $roleName = $roles[$request->jabatan];
                 Log::info("Karyawan ini ditambahkan sebagai $roleName");
                 $role = Role::findByName($roleName);
                 $save_user->assignRole($role);
             }
-            
+
             notify()->success('Data Karyawan Berhasil Ditambahkan⚡️', 'Sukses');
             return redirect()->route('karyawan.show',$karyawan->id);
         } else {
@@ -388,12 +387,11 @@ class KaryawanController extends Controller
             $file = $request->file('foto');
             $nama_file = "Karyawan_".Carbon::now()->format('YmdHs').'_'.Str::random(10);
 
-            $tujuan_upload = 'images\karyawan';
-            $file->move($tujuan_upload,$nama_file);
+            $file->move('images/karyawan',$nama_file);
 
             $save_user = User::where('id',$data_karyawan->user_id)->update([
                 'name' => $request->nama,
-                'email'  => $request->email,         
+                'email'  => $request->email,
             ]);
             Karyawan::where('id',$id)->where('active', false)->update([
                 'nama' => $request->nama,
@@ -406,7 +404,7 @@ class KaryawanController extends Controller
                 'tempat_lahir'  => $request->tempat_lahir,
                 'tgl_lahir'     => $request->tgl_lahir,
                 'alamat'        => $request->alamat,
-                'foto'          => $nama_file         
+                'foto'          => $nama_file
             ]);
 
             if ($request->jabatan == 1) {
@@ -418,7 +416,7 @@ class KaryawanController extends Controller
             } elseif ($request->jabatan == 4) {
                 $role = Role::where('name', 'kepala sekolah')->first();
             }
-            
+
             $user->roles()->detach();
             $user->assignRole($role);
             $user->save();
@@ -426,9 +424,9 @@ class KaryawanController extends Controller
         } else {
             $save_user = User::where('id',$data_karyawan->user_id)->update([
                 'name' => $request->nama,
-                'email'  => $request->email,         
+                'email'  => $request->email,
             ]);
-    
+
             Karyawan::where('id',$id)->where('active', false)->update([
                 'nama' => $request->nama,
                 'nip'  => $request->nip,
@@ -451,7 +449,7 @@ class KaryawanController extends Controller
             } elseif ($request->jabatan == 4) {
                 $role = Role::where('name', 'kepala sekolah')->first();
             }
-            
+
             $user->roles()->detach();
             $user->assignRole($role);
             $user->save();
