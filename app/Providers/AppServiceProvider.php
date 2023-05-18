@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Helpers\DateHelper;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,7 +30,6 @@ class AppServiceProvider extends ServiceProvider
     {
         config(['app.locale' => 'id']);
         Carbon::setLocale('id');
-        Schema::defaultStringLength(191);
     }
 
     protected function fungsiHelper()
